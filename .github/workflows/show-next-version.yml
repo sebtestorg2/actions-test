@@ -1,0 +1,28 @@
+name: Show next version
+
+on:
+  workflow_dispatch:
+    inputs:
+      prefix:
+        type: string
+        description: "What prefix to use for tags filtering"
+      bump:
+        type: string
+        description: "What part of version to bump"
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  next-version:
+    name: Show next version
+    runs-on: ubuntu-latest
+    steps:
+      - name: next-version
+        uses: superseb/gha-next-rancher-semver@v1.4
+        with:
+          prefix: "${{ github.event.inputs.prefix }}"
+          bump: "${{ github.event.inputs.bump }}"
+      - name: Check outputs
+        run: |
+          echo "Next version: ${{ steps.next-version.outputs.version }}"
