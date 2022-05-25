@@ -14,20 +14,36 @@ jobs:
       run: |
        wget -O latest.index.yaml https://releases.rancher.com/server-charts/latest/index.yaml
        wget -O stable.index.yaml https://releases.rancher.com/server-charts/stable/index.yaml
-    - name: Get version from latest index.yaml
-      id: latestVersion
+    - name: Get 2.6 version from latest index.yaml
+      id: latest26Version
       uses: mikefarah/yq@master
       with:
         cmd: yq  '.entries.rancher[].appVersion | select(test("^v2.6") and select(. != "*-rc*"))' 'latest.index.yaml' | head -1
-    - name: Get version from stable index.yaml
-      id: stableVersion
+    - name: Get 2.6 version from stable index.yaml
+      id: stable26Version
       uses: mikefarah/yq@master
       with:
         cmd: yq  '.entries.rancher[].appVersion | select(test("^v2.6") and select(. != "*-rc*"))' 'stable.index.yaml' | head -1
+    - name: Get 2.5 version from latest index.yaml
+      id: latest25Version
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq  '.entries.rancher[].appVersion | select(test("^v2.5") and select(. != "*-rc*"))' 'latest.index.yaml' | head -1
+    - name: Get 2.5 version from stable index.yaml
+      id: stable25Version
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq  '.entries.rancher[].appVersion | select(test("^v2.5") and select(. != "*-rc*"))' 'stable.index.yaml' | head -1
     - name: Update README file
       run: |
-       sed -i '/^\* Latest/ s/v2.6.[0-9]*/${{ steps.latestVersion.outputs.result }}/g' testfile
-       sed -i '/^\* Stable/ s/v2.6.[0-9]*/${{ steps.stableVersion.outputs.result }}/g' testfile
+       tmpfile=$(mktemp)
+       echo "* v2.6" > $tmpfile
+       echo "  * Latest - ${{ steps.latest26Version.outputs.result }} - `rancher/rancher:latest` - Read the full release [notes](https://github.com/rancher/rancher/releases/tag/${{ steps.latest26Version.outputs.result }})." >> $tmpfile
+       echo "  * Stable - ${{ steps.stable26Version.outputs.result }} - `rancher/rancher:stable` - Read the full release [notes](https://github.com/rancher/rancher/releases/tag/${{ steps.stable26Version.outputs.result }})." >> $tmpfile
+       echo "* v2.5" >> $tmpfile
+       echo "  * Latest - ${{ steps.latest25Version.outputs.result }} - Read the full release [notes](https://github.com/rancher/rancher/releases/tag/${{ steps.latest25Version.outputs.result }})." >> $tmpfile
+       echo "  * Stable - ${{ steps.stable25Version.outputs.result }} - Read the full release [notes](https://github.com/rancher/rancher/releases/tag/${{ steps.stable25Version.outputs.result }})." >> $tmpfile
+       sed -e '/## Latest Release/r '"$tmpfile"'' testfile-template > testfile
     - name: Check for repository changes
       run: |
         if git diff --name-only --exit-code; then
