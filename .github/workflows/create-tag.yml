@@ -1,34 +1,28 @@
-name: Create RC tag
-on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        type: string
-        description: "What RC tag needs to be created"
+name: Create release tag
+on: workflow_dispatch
 
 permissions:
   contents: write
 
 jobs:
   tag:
-    name: Add release tag
+    name: Create tag
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Run tests
+        run: |
+          tag=$(bash scripts/generate-release-tag)
+          echo "::set-output name=generated-tag::$tag"
+        id: generate_tag
       - uses: actions/github-script@v5.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const tag = '${{ github.event.inputs.tag }}';
-            const tag_major_minor = /^(v\d+\.\d+)/.exec(tag);
+            const tag = '${{ steps.generate_tag.outputs.generated-tag }}'
 
             const branch = '${{ github.ref_name }}'
-
-            const branch_major_minor = /^release\/(v\d+\.\d+)/.exec(branch);
-
-            if(branch !=== tag) {
-              return core.setFailed(`the tag major minor ${tag_major_minor} does not match branch major minor ${branch_major_minor}`);
-            }
-
 
             try {
               const resp = await github.rest.git.getRef({...context.repo, ref: `tags/${tag}`});
