@@ -1,5 +1,13 @@
 name: Update README
-on: workflow_dispatch
+on:
+  push:
+    branches-ignore:    
+      - '*'
+    tags-ignore:        
+      - '*rc*'
+      - '*alpha*'
+      - '*debug*'
+  workflow_dispatch:
 
 permissions:
   contents: write
