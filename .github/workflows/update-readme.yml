@@ -23,8 +23,9 @@ jobs:
     - name: Get origin branch
       id: originbranch
       run: |
-        originbranch=$(git branch -r --contains ${{ github.ref }} | awk -F'/' '{ print $2 }')
-        echo "::set-output name=originbranch::$originbranch"
+        ORIGINBRANCH=$(git branch -r --contains ${{ github.ref }} | awk -F'/' '{ print $2 }')
+        echo "ORIGINBRANCH: ${ORIGINBRANCH}"
+        echo "::set-output name=originbranch::$ORIGINBRANCH"
     - name: Get chart index.yaml files
       run: |
        wget https://github.com/mikefarah/yq/releases/download/v4.25.1/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
