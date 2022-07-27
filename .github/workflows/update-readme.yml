@@ -23,8 +23,7 @@ jobs:
     - name: Get origin branch
       id: originbranch
       run: |
-        raw=$(git branch -r --contains ${{ github.ref }})
-        originbranch=${raw/origin\/}
+        originbranch=$(git branch -r --contains ${{ github.ref }} | awk -F'/' '{ print $2 }')
         echo "::set-output name=originbranch::$originbranch"
     - name: Get chart index.yaml files
       run: |
