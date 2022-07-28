@@ -1,6 +1,5 @@
 name: Update README
 on:
-  create:
   push:
     branches-ignore:    
       - '*'
