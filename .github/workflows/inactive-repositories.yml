@@ -1,0 +1,16 @@
+name: Report inactive repositories
+on: workflow_dispatch
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          INACTIVE_REPOS="$(gh repo list sebtestorg2 -L 1000 --no-archived --json updatedAt,nameWithOwner -q '.[] | select (.updatedAt < "2022-07-01T00:00:00") | "\(.nameWithOwner) \(.updatedAt)"')"
+          echo "\`\`\`$INACTIVE_REPOS" | gh issue create --title "Inactive repositories report" --body-file=- --repo $GITHUB_REPOSITORY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
