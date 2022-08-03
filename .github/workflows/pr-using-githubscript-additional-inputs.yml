@@ -79,6 +79,7 @@ jobs:
             await github.rest.pulls.requestReviewers({
               ...context.repo,
               pull_number: pr.number,
+              reviewers: [],
               team_reviewers: ['@testteam'],
             });
             if  ( `${ process.env.INPUT_SOURCE_USER }` ) {
