@@ -79,7 +79,7 @@ jobs:
             await github.rest.pulls.requestReviewers({
               ...context.repo,
               pull_number: pr.number,
-              team_reviewers: ['testteam'],
+              team_reviewers: ['@testteam'],
             });
             if  ( `${ process.env.INPUT_SOURCE_USER }` ) {
               await github.rest.issues.addAssignees({
