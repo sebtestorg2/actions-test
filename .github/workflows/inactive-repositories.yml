@@ -1,5 +1,11 @@
 name: Report inactive repositories
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'The maximum date of the issues (format: YYYY-MM-DD)'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -10,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          INACTIVE_REPOS="$(gh repo list sebtestorg2 -L 1000 --no-archived --json updatedAt,nameWithOwner -q '.[] | select (.updatedAt < "2022-07-01T00:00:00") | "\(.nameWithOwner) \(.updatedAt)"')"
+          INACTIVE_REPOS="$(gh repo list sebtestorg2 -L 1000 --no-archived --json updatedAt,nameWithOwner -q '.[] | select (.updatedAt < "${{ inputs.date }}T00:00:00") | "\(.nameWithOwner) \(.updatedAt)"')"
           echo "\`\`\`$INACTIVE_REPOS" | gh issue create --title "Inactive repositories report" --body-file=- --repo $GITHUB_REPOSITORY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
