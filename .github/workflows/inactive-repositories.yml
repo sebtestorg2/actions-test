@@ -17,6 +17,6 @@ jobs:
     steps:
       - run: |
           INACTIVE_REPOS="$(gh repo list sebtestorg2 -L 1000 --no-archived --json updatedAt,nameWithOwner -q '.[] | select (.updatedAt < "${{ inputs.date }}T00:00:00") | "\(.nameWithOwner) \(.updatedAt)"')"
-          echo "\`\`\`$INACTIVE_REPOS" | gh issue create --title "Inactive repositories report" --body-file=- --repo $GITHUB_REPOSITORY
+          echo "\`\`\`$INACTIVE_REPOS" | gh issue create --title "Inactive repositories report (max date ${{ inputs.date }})" --body-file=- --repo $GITHUB_REPOSITORY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
