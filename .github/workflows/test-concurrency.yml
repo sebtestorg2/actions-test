@@ -1,0 +1,25 @@
+name: Test concurrency
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        description: "What tag needs to be used"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  INPUT_TAG: ${{ github.event.inputs.tag }}
+
+jobs:
+  test-concurrency:
+    name: Testing concurrency
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Replace tags
+        run: |
+          while true; do gh run list --workflow=test-concurrency.yml; sleep 5; done
