@@ -14,7 +14,7 @@ jobs:
       - name: Run add-new-versions.sh
         id: run
         run: |
-          bash add-new-versions.sh > add-new-versions.output
+          bash scripts/add-new-versions.sh > add-new-versions.output
           new_versions=$(grep ^Added add-new-versions.output)
           echo "new_versions=${new_versions}" >> $GITHUB_OUTPUT
         env:
