@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Label issues
         id: run
-        run: gh issue edit --add-label ${LABEL} ${{ github.event.issue.number }}
+        run: gh issue edit -R ${GITHUB_REPOSITORY} --add-label ${LABEL} ${{ github.event.issue.number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LABEL: "bug"
