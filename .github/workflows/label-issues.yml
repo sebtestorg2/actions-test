@@ -1,4 +1,4 @@
-name: Label issues
+name: Label issue
 on:
   issues:
     types:
@@ -12,7 +12,7 @@ jobs:
   label_issues:
     runs-on: ubuntu-latest
     steps:
-      - name: Label issues
+      - name: Label issue
         id: run
         run: gh issue edit -R ${GITHUB_REPOSITORY} --add-label ${LABEL} ${{ github.event.issue.number }}
         env:
