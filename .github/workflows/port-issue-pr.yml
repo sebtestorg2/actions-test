@@ -6,11 +6,13 @@ on:
       - created
 
 jobs:
-  like-pizza:
+  port-issue:
     runs-on: ubuntu-latest
     if: contains(github.event.comment.body, '/backport') || contains(github.event.comment.body, '/forwardport')
     steps:
       - name: Check org membership
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           if gh api orgs/sebtestorg2/members | jq -e --arg GITHUB_ACTOR "$GITHUB_ACTOR" '.[] | select(.login == $GITHUB_ACTOR)' > /dev/null; then
               echo "${GITHUB_ACTOR} is a member"
@@ -21,6 +23,8 @@ jobs:
           fi
       - name: Port issue/PR
         if: ${{ env.is_member == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           ORIGINAL_ISSUE=$(gh issue view -R ${GITHUB_REPOSITORY} ${{ github.event.issue.number }} --json title,body)
           ORIGINAL_TITLE=$(echo "${ORIGINAL_ISSUE}" | jq -r .title)
