@@ -32,5 +32,5 @@ jobs:
           echo "This is an automated request to port issue #${{ github.event.issue.number }} by @${GITHUB_ACTOR}" > $BODY
           echo "Original issue body:" >> $BODY
           echo "${ORIGINAL_ISSUE}" | jq -r .body >> $BODY
-          NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "[Port] ${ORIGINAL_TITLE}" --body-file $BODY
+          NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "[Port] ${ORIGINAL_TITLE}" --body-file $BODY)
           echo "Port issue created: ${NEW_ISSUE}" >> $GITHUB_STEP_SUMMARY
