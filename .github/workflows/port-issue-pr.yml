@@ -1,0 +1,29 @@
+name: Port issue/PR
+
+on:
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  like-pizza:
+    runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '/backport') || contains(github.event.comment.body, '/forwardport')
+    steps:
+      - name: Check org membership
+        run: |
+          if gh api orgs/sebtestorg2/members | jq -e --arg GITHUB_ACTOR "$GITHUB_ACTOR" '.[] | select(.login == $GITHUB_ACTOR)' > /dev/null; then
+              echo "${GITHUB_ACTOR} is a member"
+              echo "is_member=true" >> $GITHUB_ENV
+          else
+              echo "${GITHUB_ACTOR} is not a member"
+              echo "is_member=false" >> $GITHUB_ENV
+          fi
+      - name: Port issue/PR
+        if: ${{ env.is_member == 'true' }}
+        run: |
+          ORIGINAL_ISSUE=$(gh issue view -R ${GITHUB_REPOSITORY} ${{ github.event.issue.number }} --json title,body)
+          ORIGINAL_TITLE=$(echo "${ORIGINAL_ISSUE}" | jq -r .title)
+          ORIGINAL_BODY=$(echo "${ORIGINAL_ISSUE}" | jq -r .body)
+          NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "Port ${ORIGINAL_TITLE}" --body "This is an automated request to port. $(echo ${ORIGINAL_BODY})")
+          echo "Port issue created: ${NEW_ISSUE}" >> $GITHUB_STEP_SUMMARY
