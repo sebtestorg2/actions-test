@@ -1,4 +1,4 @@
-name: Port issue/PR
+name: Port issue
 
 on:
   issue_comment:
@@ -14,15 +14,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          if gh api orgs/sebtestorg2/members | jq -e --arg GITHUB_ACTOR "$GITHUB_ACTOR" '.[] | select(.login == $GITHUB_ACTOR)' > /dev/null; then
+          if gh api orgs/${GITHUB_REPOSITORY_OWNER}/members | jq -e --arg GITHUB_ACTOR "$GITHUB_ACTOR" '.[] | select(.login == $GITHUB_ACTOR)' > /dev/null; then
               echo "${GITHUB_ACTOR} is a member"
               echo "is_member=true" >> $GITHUB_ENV
           else
-              echo "${GITHUB_ACTOR} is not a member"
+              echo "${GITHUB_ACTOR} is not a member" >> $GITHUB_STEP_SUMMARY
               echo "is_member=false" >> $GITHUB_ENV
           fi
-      - name: Port issue/PR
-        if: ${{ env.is_member == 'true' }}
+      - name: Check milestone
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
+          if gh api repos/${GITHUB_REPOSITORY}/milestones --paginate | jq -e --arg MILESTONE "$MILESTONE" '.[] | select(.title == $MILESTONE)' > /dev/null; then
+              echo "Milestone exists"
+           else
+              echo "Milestone does not exist" >> $GITHUB_STEP_SUMMARY
+              echo "milestone_exists=false" >> $GITHUB_ENV
+           fi
+      - name: Port issue
+        if: ${{ env.is_member == 'true' }} && ${{ env.milestone_exists == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           ORIGINAL_ISSUE_NUMBER: ${{ github.event.issue.number }}
