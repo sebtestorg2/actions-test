@@ -40,15 +40,21 @@ jobs:
           ORIGINAL_ISSUE_NUMBER: ${{ github.event.issue.number }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
+          declare -a additional_cmd
           BODY=$(mktemp)
           ORIGINAL_ISSUE=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json title,body)
           ORIGINAL_TITLE=$(echo "${ORIGINAL_ISSUE}" | jq -r .title)
           TYPE=$(echo "${COMMENT_BODY}" | awk '{ print $1 }' | sed -e 's_/__')
           MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
+          ORIGINAL_LABELS=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json labels --jq '[.labels[].name] | join(",")')
+          if [ -n "$ORIGINAL_LABELS" ]; then
+              additional_cmd+=("--label")
+              additional_cmd+=("${ORIGINAL_LABELS}")
+          fi
           if [ -n "$MILESTONE" ]; then
               echo "This is an automated request to port issue #${ORIGINAL_ISSUE_NUMBER} by @${GITHUB_ACTOR}" > $BODY
               echo "Original issue body:" >> $BODY
               echo "${ORIGINAL_ISSUE}" | jq -r .body >> $BODY
-              NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "[${TYPE}] ${ORIGINAL_TITLE}" --body-file $BODY -m $MILESTONE)
+              NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "[${TYPE}] ${ORIGINAL_TITLE}" --body-file $BODY -m $MILESTONE "${additional_cmd[@]}")
               echo "Port issue created: ${NEW_ISSUE}" >> $GITHUB_STEP_SUMMARY
           fi
