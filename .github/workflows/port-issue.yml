@@ -24,6 +24,7 @@ jobs:
       - name: Check milestone
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          ORIGINAL_ISSUE_NUMBER: ${{ github.event.issue.number }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
@@ -31,6 +32,7 @@ jobs:
               echo "Milestone exists"
            else
               echo "Milestone does not exist" >> $GITHUB_STEP_SUMMARY
+              gh issue comment -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --body "Not creating port issue, milestone ${MILESTONE} does not exist or is not an open milestone"
               echo "milestone_exists=false" >> $GITHUB_ENV
            fi
       - name: Port issue
