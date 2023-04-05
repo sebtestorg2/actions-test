@@ -51,7 +51,7 @@ jobs:
               additional_cmd+=("--label")
               additional_cmd+=("${ORIGINAL_LABELS}")
           fi
-          ORIGINAL_PROJECT=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json labels --jq '.projectItems[].title')
+          ORIGINAL_PROJECT=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json projectItems --jq '.projectItems[].title')
           if [ -n "$ORIGINAL_PROJECT" ]; then
               additional_cmd+=("--project")
               additional_cmd+=("${ORIGINAL_PROJECT}")
