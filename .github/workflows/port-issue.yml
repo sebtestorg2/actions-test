@@ -51,6 +51,11 @@ jobs:
               additional_cmd+=("--label")
               additional_cmd+=("${ORIGINAL_LABELS}")
           fi
+          ORIGINAL_PROJECT=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json labels --jq '.projectItems[].title')
+          if [ -n "$ORIGINAL_PROJECT" ]; then
+              additional_cmd+=("--project")
+              additional_cmd+=("${ORIGINAL_PROJECT}")
+          fi
           if [ -n "$MILESTONE" ]; then
               echo "This is an automated request to port issue #${ORIGINAL_ISSUE_NUMBER} by @${GITHUB_ACTOR}" > $BODY
               echo "Original issue body:" >> $BODY
