@@ -25,12 +25,18 @@ jobs:
         if: ${{ env.is_member == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          ORIGINAL_ISSUE_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           BODY=$(mktemp)
-          ORIGINAL_ISSUE=$(gh issue view -R ${GITHUB_REPOSITORY} ${{ github.event.issue.number }} --json title,body)
+          ORIGINAL_ISSUE=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json title,body)
           ORIGINAL_TITLE=$(echo "${ORIGINAL_ISSUE}" | jq -r .title)
-          echo "This is an automated request to port issue #${{ github.event.issue.number }} by @${GITHUB_ACTOR}" > $BODY
-          echo "Original issue body:" >> $BODY
-          echo "${ORIGINAL_ISSUE}" | jq -r .body >> $BODY
-          NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "[Port] ${ORIGINAL_TITLE}" --body-file $BODY)
-          echo "Port issue created: ${NEW_ISSUE}" >> $GITHUB_STEP_SUMMARY
+          TYPE=$(echo "${COMMENT_BODY}" | awk '{ print $1 }' | sed -e 's_/__')
+          MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
+          if [ -n "$MILESTONE" ]; then
+              echo "This is an automated request to port issue #${ORIGINAL_ISSUE_NUMBER} by @${GITHUB_ACTOR}" > $BODY
+              echo "Original issue body:" >> $BODY
+              echo "${ORIGINAL_ISSUE}" | jq -r .body >> $BODY
+              NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "[${TYPE}] ${ORIGINAL_TITLE}" --body-file $BODY -m $MILESTONE)
+              echo "Port issue created: ${NEW_ISSUE}" >> $GITHUB_STEP_SUMMARY
+          fi
