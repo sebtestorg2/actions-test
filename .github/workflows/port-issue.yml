@@ -22,6 +22,7 @@ jobs:
               echo "is_member=false" >> $GITHUB_ENV
           fi
       - name: Check milestone
+        if: ${{ env.is_member == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           ORIGINAL_ISSUE_NUMBER: ${{ github.event.issue.number }}
