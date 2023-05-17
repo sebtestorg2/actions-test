@@ -48,6 +48,10 @@ jobs:
           ORIGINAL_TITLE=$(echo "${ORIGINAL_ISSUE}" | jq -r .title)
           TYPE=$(echo "${COMMENT_BODY}" | awk '{ print $1 }' | sed -e 's_/__')
           MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
+          NEW_TITLE="[${TYPE}] ${ORIGINAL_TITLE}"
+          if [[ $MILESTONE =~ (v[0-9]\.[0-9]+) ]]; then
+              NEW_TITLE="[${TYPE} ${BASH_REMATCH[1]}] ${ORIGINAL_TITLE}"
+          fi
           ORIGINAL_LABELS=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json labels --jq '[.labels[].name] | join(",")')
           if [ -n "$ORIGINAL_LABELS" ]; then
               additional_cmd+=("--label")
@@ -61,7 +65,7 @@ jobs:
           if [ -n "$MILESTONE" ]; then
               echo "This is an automated request to port issue #${ORIGINAL_ISSUE_NUMBER} by @${GITHUB_ACTOR}" > $BODY
               echo "Original issue body:" >> $BODY
-              echo "${ORIGINAL_ISSUE}" | jq -r .body >> $BODY
-              NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "[${TYPE}] ${ORIGINAL_TITLE}" --body-file $BODY -m $MILESTONE "${additional_cmd[@]}")
+              echo "${ORIGINAL_ISSUE}" | jq -r '.body[0:65536]' >> $BODY
+              NEW_ISSUE=$(gh issue create -R ${GITHUB_REPOSITORY} --title "${NEW_TITLE}" --body-file $BODY -m $MILESTONE "${additional_cmd[@]}")
               echo "Port issue created: ${NEW_ISSUE}" >> $GITHUB_STEP_SUMMARY
           fi
