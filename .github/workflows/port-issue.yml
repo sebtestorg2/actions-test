@@ -32,6 +32,7 @@ jobs:
           MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
           if gh api repos/${GITHUB_REPOSITORY}/milestones --paginate | jq -e --arg MILESTONE "$MILESTONE" '.[] | select(.title == $MILESTONE)' > /dev/null; then
               echo "Milestone exists"
+              echo "milestone_exists=true" >> $GITHUB_ENV
            else
               echo "Milestone does not exist" >> $GITHUB_STEP_SUMMARY
               gh issue comment -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --body "Not creating port issue, milestone ${MILESTONE} does not exist or is not an open milestone"
