@@ -46,7 +46,7 @@ jobs:
         run: |
           declare -a additional_cmd
           BODY=$(mktemp)
-          ORIGINAL_ISSUE=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json title,body)
+          ORIGINAL_ISSUE=$(gh issue view -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --json title,body,assignees)
           ORIGINAL_TITLE=$(echo "${ORIGINAL_ISSUE}" | jq -r .title)
           TYPE=$(echo "${COMMENT_BODY}" | awk '{ print $1 }' | sed -e 's_/__')
           MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
@@ -63,6 +63,24 @@ jobs:
           if [ -n "$ORIGINAL_PROJECT" ]; then
               additional_cmd+=("--project")
               additional_cmd+=("${ORIGINAL_PROJECT}")
+          fi
+          ASSIGNEES=$(echo "${ORIGINAL_ISSUE}" | jq -r .assignees[].login)
+          if [ -n "$ASSIGNEES" ]; then
+              echo "Checking if assignee is member before assigning"
+              DELIMITER=""
+              NEW_ASSIGNEES=""
+              for ASSIGNEE in $ASSIGNEES; do
+                  if gh api orgs/${GITHUB_REPOSITORY_OWNER}/members | jq -e --arg GITHUB_ACTOR "$GITHUB_ACTOR" '.[] | select(.login == $GITHUB_ACTOR)' > /dev/null; then
+                      echo "${ASSIGNEE} is a member, adding to assignees"
+                      NEW_ASSIGNEES="${NEW_ASSIGNEES}${DELIMITER}${ASSIGNEE}"
+                      DELIMITER=","
+                  fi
+              done
+              if [ -n "$NEW_ASSIGNEES" ]; then
+                  echo "Assignees for new issue: ${NEW_ASSIGNEES}"
+                  additional_cmd+=("--assignee")
+                  additional_cmd+=("${NEW_ASSIGNEES}")
+              fi
           fi
           if [ -n "$MILESTONE" ]; then
               echo "This is an automated request to port issue #${ORIGINAL_ISSUE_NUMBER} by @${GITHUB_ACTOR}" > $BODY
