@@ -29,7 +29,9 @@ jobs:
           ORIGINAL_ISSUE_NUMBER: ${{ github.event.issue.number }}
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
+          BODY_MILESTONE=$(echo "${COMMENT_BODY}" | awk '{ print $2 }')
+          # Sanitize input
+          MILESTONE=${BODY_MILESTONE//[^a-zA-Z0-9\-\.]/}
           if gh api repos/${GITHUB_REPOSITORY}/milestones --paginate | jq -e --arg MILESTONE "$MILESTONE" '.[] | select(.title == $MILESTONE)' > /dev/null; then
               echo "Milestone exists"
               echo "milestone_exists=true" >> $GITHUB_ENV
