@@ -19,7 +19,7 @@ jobs:
               echo "${GITHUB_ACTOR} is a member"
               echo "is_member=true" >> $GITHUB_ENV
           else
-              echo "${GITHUB_ACTOR} is not a member" >> $GITHUB_STEP_SUMMARY
+              echo "${GITHUB_ACTOR} is not a member of ${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_STEP_SUMMARY
               echo "is_member=false" >> $GITHUB_ENV
           fi
       - name: Check milestone
@@ -36,7 +36,7 @@ jobs:
               echo "Milestone exists"
               echo "milestone_exists=true" >> $GITHUB_ENV
            else
-              echo "Milestone does not exist" >> $GITHUB_STEP_SUMMARY
+              echo "Milestone ${MILESTONE} does not exist" >> $GITHUB_STEP_SUMMARY
               gh issue comment -R ${GITHUB_REPOSITORY} ${ORIGINAL_ISSUE_NUMBER} --body "Not creating port issue, milestone ${MILESTONE} does not exist or is not an open milestone"
               echo "milestone_exists=false" >> $GITHUB_ENV
            fi
