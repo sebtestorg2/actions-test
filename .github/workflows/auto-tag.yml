@@ -42,3 +42,6 @@ jobs:
               ref: `refs/tags/${tag}`,
               sha: context.sha
             })
+      - name: Create release
+        run: |
+          gh release create ${{ steps.generate_tag.outputs.generated_tag }} --generate-notes
